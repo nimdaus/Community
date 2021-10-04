@@ -131,6 +131,7 @@
     - { role: ubooquity, tags: ['ubooquity'] }
     - { role: unifi, tags: ['unifi'] }
     - { role: unmanic, tags: ['unmanic'] }
+    - { role: uptime-kuma, tags: ['uptime-kuma'] }
     - { role: varken, tags: ['varken'] }
     - { role: vnstat, tags: ['vnstat'] }
     - { role: vscode, tags: ['vscode'] }

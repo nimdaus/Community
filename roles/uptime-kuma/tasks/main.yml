@@ -1,0 +1,54 @@
+#########################################################################
+# Title:            Community: uptime-kuma                              #
+# Author(s):        nimdaus                                             #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  louislam/uptime-kuma:latest                         #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Set DNS Record on CloudFlare"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: "{{ uptime-kuma.subdomain|default('uptime-kuma',true) }}"
+  when: cloudflare_enabled
+
+- name: Stop and remove any existing containers
+  docker_container: "name={{ item }} state=absent"
+  with_items:
+    - uptime-kuma
+
+- name: Create required directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/uptime-kuma
+
+- name: Create and start uptime-kuma container
+  docker_container:
+    name: uptime-kuma
+    image: "louislam/uptime-kuma:latest"
+    pull: yes
+    env:
+      TZ: "{{ tz }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      APP_URL: "https://{{ uptime-kuma.subdomain|default('uptime-kuma',true) }}.{{ user.domain }}"
+      VIRTUAL_HOST: "{{ uptime-kuma.subdomain|default('uptime-kuma',true) }}.{{ user.domain }}"
+      VIRTUAL_PORT: "3001"
+      VIRTUAL_PROTO: https
+      LETSENCRYPT_HOST: "{{ uptime-kuma.subdomain|default('uptime-kuma',true) }}.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+    volumes:
+      - "/opt/uptime-kuma:/app/data"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - uptime-kuma
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started

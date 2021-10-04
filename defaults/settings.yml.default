@@ -125,6 +125,8 @@ transmissionx:
     - ""
 unifi: 
   port: 8080
+uptime-kuma:
+  subdomain: uptime-kuma
 varken: 
   tautulli_subdomain: plexpy
 wordpress: 
